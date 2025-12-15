@@ -1,4 +1,4 @@
-# Microservices Refactoring Project - Variant 5
+# Рефакторинг №3 (вариант 5)
 
 Проект рефакторинга монолитной архитектуры в микросервисную с использованием Docker, PostgreSQL и Redis.
 
@@ -61,7 +61,7 @@
 1. Клонируйте репозиторий:
 ```bash
 git clone https://github.com/FlewToL/refactor3.git
-cd Debug
+cd refactor3
 ```
 
 2. Запустите все сервисы:
