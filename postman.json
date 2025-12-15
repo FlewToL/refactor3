@@ -1,0 +1,936 @@
+{
+  "info": {
+    "name": "Microservices Refactoring - API (Variant 5)",
+    "description": "Postman collection to test API Gateway and microservices (users, orders, delivery). Set base_url to http://localhost:8000 before running.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "microservices-refactor-collection-v5"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "deliveryId",
+      "value": ""
+    },
+    {
+      "key": "trackingNumber",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@mail.com\",\n  \"full_name\": \"Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Создать пользователя через API Gateway"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.id) {",
+                  "        pm.environment.set('userId', jsonData.id);",
+                  "        pm.environment.set('userEmail', jsonData.email || '');",
+                  "    }",
+                  "} catch(e) {",
+                  "    // no-op",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get user by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Получить пользователя по ID (проверьте, что переменная userId установлена после Create user)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has user fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('full_name');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get all users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Получить список всех пользователей"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{userId}},\n  \"product\": \"Laptop\",\n  \"amount\": 999.99,\n  \"status\": \"pending\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Создать заказ. Перед выполнением убедитесь, что переменная userId установлена."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.id) {",
+                  "        pm.environment.set('orderId', jsonData.id);",
+                  "    }",
+                  "} catch(e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create order with delivery",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{userId}},\n  \"product\": \"Laptop\",\n  \"amount\": 999.99,\n  \"status\": \"pending\",\n  \"delivery_address\": \"123 Main St, Moscow, Russia\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Создать заказ с автоматическим созданием доставки. Возвращает tracking_number и estimated_delivery_date."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Order created with delivery info\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    if (jsonData.delivery_info) {",
+                  "        pm.expect(jsonData.delivery_info).to.have.property('tracking_number');",
+                  "        pm.expect(jsonData.delivery_info).to.have.property('estimated_delivery_date');",
+                  "    }",
+                  "});",
+                  "",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.id) {",
+                  "        pm.environment.set('orderId', jsonData.id);",
+                  "    }",
+                  "    if (jsonData && jsonData.delivery_info && jsonData.delivery_info.tracking_number) {",
+                  "        pm.environment.set('trackingNumber', jsonData.delivery_info.tracking_number);",
+                  "    }",
+                  "} catch(e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get order by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{orderId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders",
+                "{{orderId}}"
+              ],
+              "variable": [
+                {
+                  "key": "orderId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Получить заказ по ID"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has order fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('user_id');",
+                  "    pm.expect(jsonData).to.have.property('product');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get orders by user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?user_id={{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": "{{userId}}"
+                }
+              ]
+            },
+            "description": "Получить список заказов для пользователя (фильтр по user_id)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delivery (Variant 5)",
+      "item": [
+        {
+          "name": "Create delivery",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": {{orderId}},\n  \"address\": \"123 Main St, Moscow, Russia\",\n  \"status\": \"pending\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/deliveries",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries"
+              ]
+            },
+            "description": "Создать доставку с автоматической генерацией трек-номера. estimated_delivery_date устанавливается на +3 дня автоматически."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Delivery created with tracking number\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('tracking_number');",
+                  "    pm.expect(jsonData.tracking_number).to.match(/^TRK\\d+$/);",
+                  "    pm.expect(jsonData).to.have.property('estimated_delivery_date');",
+                  "});",
+                  "",
+                  "try {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData && jsonData.id) {",
+                  "        pm.environment.set('deliveryId', jsonData.id);",
+                  "    }",
+                  "    if (jsonData && jsonData.tracking_number) {",
+                  "        pm.environment.set('trackingNumber', jsonData.tracking_number);",
+                  "    }",
+                  "} catch(e) {}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get delivery by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deliveries/{{deliveryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries",
+                "{{deliveryId}}"
+              ],
+              "variable": [
+                {
+                  "key": "deliveryId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Получить доставку по ID (кэшируется в Redis с TTL 5 минут)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has delivery fields\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('order_id');",
+                  "    pm.expect(jsonData).to.have.property('address');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('tracking_number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get delivery by tracking number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deliveries/tracking/{{trackingNumber}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries",
+                "tracking",
+                "{{trackingNumber}}"
+              ],
+              "variable": [
+                {
+                  "key": "trackingNumber",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Отследить доставку по трек-номеру. Пользователи могут отслеживать доставку без знания ID."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Delivery found by tracking number\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('tracking_number');",
+                  "    pm.expect(jsonData.tracking_number).to.eql(pm.environment.get('trackingNumber'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get deliveries by order",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deliveries?order_id={{orderId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries"
+              ],
+              "query": [
+                {
+                  "key": "order_id",
+                  "value": "{{orderId}}"
+                }
+              ]
+            },
+            "description": "Получить все доставки для заказа (фильтр по order_id)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update delivery status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_transit\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/deliveries/{{deliveryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries",
+                "{{deliveryId}}"
+              ],
+              "variable": [
+                {
+                  "key": "deliveryId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Обновить статус доставки. Возможные статусы: pending, in_transit, delivered, cancelled, failed"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test(\"Status updated\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData.status).to.eql('in_transit');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark delivery as delivered",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"delivered\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/deliveries/{{deliveryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries",
+                "{{deliveryId}}"
+              ],
+              "variable": [
+                {
+                  "key": "deliveryId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Отметить доставку как завершённую. actual_delivery_date устанавливается автоматически."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test(\"Status updated to delivered\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('delivered');",
+                  "});",
+                  "",
+                  "pm.test(\"Actual delivery date set automatically\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('actual_delivery_date');",
+                  "    pm.expect(jsonData.actual_delivery_date).to.not.be.null;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete delivery",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deliveries/{{deliveryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries",
+                "{{deliveryId}}"
+              ],
+              "variable": [
+                {
+                  "key": "deliveryId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Удалить доставку"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 204\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aggregation",
+      "item": [
+        {
+          "name": "Get user details (user + orders)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}/details",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "details"
+              ],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Агрегированный эндпоинт Gateway: сведения о пользователе и его заказах"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains user and orders\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    pm.expect(jsonData).to.have.property('orders');",
+                  "    pm.expect(jsonData.orders).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health & Circuit Breaker",
+      "item": [
+        {
+          "name": "Get API Gateway health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Проверить состояние API Gateway и Circuit Breakers (users, orders, delivery)"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Health check includes circuit breaker status\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('circuits');",
+                  "    pm.expect(jsonData.circuits).to.have.property('users');",
+                  "    pm.expect(jsonData.circuits).to.have.property('orders');",
+                  "    pm.expect(jsonData.circuits).to.have.property('delivery');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get API Gateway status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "status"
+              ]
+            },
+            "description": "Простая проверка статуса API Gateway"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Status is running\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cache Tests",
+      "item": [
+        {
+          "name": "Get delivery (Cache Miss)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deliveries/{{deliveryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries",
+                "{{deliveryId}}"
+              ],
+              "variable": [
+                {
+                  "key": "deliveryId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Первый запрос - cache miss. Проверьте логи service_delivery для подтверждения."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time recorded\", function () {",
+                  "    pm.environment.set('firstResponseTime', pm.response.responseTime);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get delivery (Cache Hit)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/deliveries/{{deliveryId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "deliveries",
+                "{{deliveryId}}"
+              ],
+              "variable": [
+                {
+                  "key": "deliveryId",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Второй запрос - cache hit. Должен быть быстрее первого. Проверьте логи service_delivery."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Cache hit is faster (or similar)\", function () {",
+                  "    var firstTime = pm.environment.get('firstResponseTime');",
+                  "    if (firstTime) {",
+                  "        console.log('First request: ' + firstTime + 'ms');",
+                  "        console.log('Second request: ' + pm.response.responseTime + 'ms');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
